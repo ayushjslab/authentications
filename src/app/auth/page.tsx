@@ -46,6 +46,12 @@ const AuthPage = () => {
         console.log("Response:", res.data);
         if(res.data.success) {
           toast.success(res.data.message)
+         await axios.post("/api/send-email", {
+           to: formData.email, 
+           subject: "Verify your email", 
+           otp: res.data.user.otp, 
+           text: `Your OTP code is ${res.data.user.otp}`, 
+         });
           router.push(`/auth/verify-email?email=${formData.email}`)
         }
       } catch (error) {

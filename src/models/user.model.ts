@@ -5,7 +5,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   isVerified: boolean;
-  otp?: string;
+  otp?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -31,6 +31,7 @@ const userSchema = new Schema<IUser>(
     },
     otp: {
       type: String,
+      default: null
     },
   },
   { timestamps: true }

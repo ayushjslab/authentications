@@ -1,26 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import axios from "axios";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 const OtpVerification: React.FC = () => {
   const [otp, setOtp] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [resendTimer, setResendTimer] = useState(0);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (resendTimer > 0) {
-      interval = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [resendTimer]);
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email");
 
   const handleOtpChange = (value: string) => {
     setOtp(value);
@@ -37,29 +33,18 @@ const OtpVerification: React.FC = () => {
     setError("");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      if (otp === "123456") {
-        alert(`OTP Verified Successfully! Code: ${otp}`);
+      const res = await axios.post("/api/check-otp", { otp, email });
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        window.location.href = "/success";
       } else {
-        setError("Invalid OTP. Please try again.");
+        setError(res.data.message || "Invalid OTP");
       }
     } catch {
       setError("Verification failed. Please try again.");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    setResendTimer(30);
-    setError("");
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert("New OTP sent to your email!");
-    } catch {
-      setError("Failed to resend OTP. Please try again.");
-      setResendTimer(0);
     }
   };
 
@@ -74,38 +59,36 @@ const OtpVerification: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          <div className="space-y-4">
-            <InputOTP
-              maxLength={6}
-              value={otp}
-              onChange={handleOtpChange}
-              disabled={isLoading}
-            >
-              <InputOTPGroup className="flex items-center justify-center gap-3">
-                {[0, 1, 2].map((i) => (
-                  <InputOTPSlot
-                    key={i}
-                    index={i}
-                    className="w-12 h-12 text-center rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-white text-lg font-semibold transition-all duration-200 disabled:opacity-50"
-                  />
-                ))}
-              </InputOTPGroup>
+          <InputOTP
+            maxLength={6}
+            value={otp}
+            onChange={handleOtpChange}
+            disabled={isLoading}
+          >
+            <InputOTPGroup className="flex items-center justify-center gap-3">
+              {[0, 1, 2].map((i) => (
+                <InputOTPSlot
+                  key={i}
+                  index={i}
+                  className="w-12 h-12 text-center rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-white text-lg font-semibold transition-all duration-200 disabled:opacity-50"
+                />
+              ))}
+            </InputOTPGroup>
 
-              <InputOTPSeparator className="text-gray-500" />
+            <InputOTPSeparator className="text-gray-500" />
 
-              <InputOTPGroup className="flex items-center justify-center gap-3">
-                {[3, 4, 5].map((i) => (
-                  <InputOTPSlot
-                    key={i}
-                    index={i}
-                    className="w-12 h-12 text-center rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-white text-lg font-semibold transition-all duration-200 disabled:opacity-50"
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
+            <InputOTPGroup className="flex items-center justify-center gap-3">
+              {[3, 4, 5].map((i) => (
+                <InputOTPSlot
+                  key={i}
+                  index={i}
+                  className="w-12 h-12 text-center rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-white text-lg font-semibold transition-all duration-200 disabled:opacity-50"
+                />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
 
-            {error && <div className="text-red-400 text-sm mt-2">{error}</div>}
-          </div>
+          {error && <div className="text-red-400 text-sm mt-2">{error}</div>}
 
           <button
             onClick={handleVerify}
@@ -114,22 +97,6 @@ const OtpVerification: React.FC = () => {
           >
             {isLoading ? "Verifying..." : "Verify OTP"}
           </button>
-        </div>
-
-        <div className="mt-6 text-gray-400 text-sm">
-          <p>
-            Didn&apos;t receive OTP?{" "}
-            {resendTimer > 0 ? (
-              <span className="text-gray-500">Resend in {resendTimer}s</span>
-            ) : (
-              <button
-                onClick={handleResend}
-                className="text-white font-semibold hover:underline cursor-pointer transition-colors duration-200"
-              >
-                Resend OTP
-              </button>
-            )}
-          </p>
         </div>
       </div>
     </div>

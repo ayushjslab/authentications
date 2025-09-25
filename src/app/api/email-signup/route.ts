@@ -39,6 +39,7 @@ export async function POST (req: NextRequest) {
             name: newUser.name,
             email: newUser.email,
             isVerified: newUser.isVerified,
+            otp: newUser.otp,
           },
         },
         { status: 201 }
