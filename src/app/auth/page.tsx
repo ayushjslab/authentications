@@ -36,7 +36,7 @@ const AuthPage = () => {
 
     if (isSignUp) {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         console.log("Sign Up Data:", formData);
         const res = await axios.post("/api/email-signup", {
           name: formData.fullName,
@@ -44,27 +44,40 @@ const AuthPage = () => {
           password: formData.password,
         });
         console.log("Response:", res.data);
-        if(res.data.success) {
-          toast.success(res.data.message)
-         await axios.post("/api/send-email", {
-           to: formData.email, 
-           subject: "Verify your email", 
-           otp: res.data.user.otp, 
-           text: `Your OTP code is ${res.data.user.otp}`, 
-         });
-          router.push(`/auth/verify-email?email=${formData.email}`)
+        if (res.data.success) {
+          toast.success(res.data.message);
+          await axios.post("/api/send-email", {
+            to: formData.email,
+            subject: "Verify your email",
+            otp: res.data.user.otp,
+            text: `Your OTP code is ${res.data.user.otp}`,
+          });
+          router.push(`/auth/verify-email?email=${formData.email}`);
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
+      } finally {
+        setIsLoading(false);
       }
-      finally{
-      setIsLoading(false)
-    }
     } else {
-      console.log("Sign In Data:", {
-        email: formData.email,
-        password: formData.password,
-      });
+      try {
+        setIsLoading(true)
+        const res = await axios.post(`/api/email-login`, {
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (res.data.success) {
+          toast.success(res.data.message);
+          router.push("/");
+        } else {
+          toast.error(res.data.message);
+        }
+      } catch (error) {
+        console.log(error);
+      }finally{
+        setIsLoading(false)
+      }
     }
   };
 

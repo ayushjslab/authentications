@@ -13,6 +13,15 @@ export async function POST (req: NextRequest) {
             NextResponse.json({message: 'All fields are required', success: false}, {status: 400})
         }
 
+         const existingUser = await User.findOne({ email });
+         if (existingUser) {
+           return NextResponse.json(
+             { message: "Email already exists", success: false },
+             { status: 400 }
+           );
+         }
+
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const otp = otpGenerator(6)
