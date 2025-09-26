@@ -46,15 +46,15 @@ const OtpVerification: React.FC = () => {
     setError("");
 
     try {
-      const res = await axios.post("/api/check-otp", { otp, email });
+      const res = await axios.post("/api/reset-email-verification", { otp, email });
 
       if (res.data.success) {
         toast.success(res.data.message);
-        window.location.href = "/success";
+        window.location.href = `/auth/forgot-password/reset?email=${email}`;
       } else {
         setError(res.data.message || "Invalid OTP");
       }
-    } catch (error: any){
+    } catch (error: any) {
       setError("Verification failed. Please try again.");
       toast.error(error.response.data.message);
     } finally {
@@ -68,13 +68,15 @@ const OtpVerification: React.FC = () => {
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-
   const handleResendOtp = async () => {
     if (!email) return;
 
     setIsResending(true);
     try {
-      const res = await axios.post("/api/send-email", { to: email, subject: "Verify you email" });
+      const res = await axios.post("/api/send-email", {
+        to: email,
+        subject: "Verify you email",
+      });
       if (res.data.success) {
         toast.success("New OTP sent to your email");
         setTimeLeft(300);
@@ -94,7 +96,7 @@ const OtpVerification: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-black p-4">
       <div className="bg-gray-800/30 text-white p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border border-gray-700">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold mb-2">OTP Verification</h2>
+          <h2 className="text-3xl font-bold mb-2">OTP For Reset Password</h2>
           <p className="text-gray-400">
             Enter the 6-digit OTP sent to your email
           </p>

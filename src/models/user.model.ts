@@ -8,6 +8,7 @@ export interface IUser extends Document {
   otp?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
+  otpExpiresAt: Date;
 }
 
 const userSchema = new Schema<IUser>(
@@ -33,6 +34,9 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: null
     },
+    otpExpiresAt: {
+      type: Date,
+    }
   },
   { timestamps: true }
 );

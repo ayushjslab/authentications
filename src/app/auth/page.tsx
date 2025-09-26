@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -37,31 +38,31 @@ const AuthPage = () => {
     if (isSignUp) {
       try {
         setIsLoading(true);
-        console.log("Sign Up Data:", formData);
         const res = await axios.post("/api/email-signup", {
           name: formData.fullName,
           email: formData.email,
           password: formData.password,
         });
-        console.log("Response:", res.data);
         if (res.data.success) {
           toast.success(res.data.message);
-          await axios.post("/api/send-email", {
+          const response = await axios.post("/api/send-email", {
             to: formData.email,
             subject: "Verify your email",
-            otp: res.data.user.otp,
-            text: `Your OTP code is ${res.data.user.otp}`,
           });
-          router.push(`/auth/verify-email?email=${formData.email}`);
+          if (response.data.success) {
+            toast.success("Verification email sent. Please check your inbox.");
+            router.push(`/auth/verify-email?email=${formData.email}`);
+          }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
+        toast.error(error.response.data.message);
       } finally {
         setIsLoading(false);
       }
     } else {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const res = await axios.post(`/api/email-login`, {
           email: formData.email,
           password: formData.password,
@@ -75,8 +76,8 @@ const AuthPage = () => {
         }
       } catch (error) {
         console.log(error);
-      }finally{
-        setIsLoading(false)
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -172,6 +173,20 @@ const AuthPage = () => {
             )}
           </button>
         </form>
+
+        {!isSignUp && (
+          <div className="flex items-center justify-center w-full mt-4">
+            <button
+              type="button"
+              className="text-sm text-blue-400 hover:underline cursor-pointer"
+              onClick={() => {
+                router.push("/auth/forgot-password");
+              }}
+            >
+              Forgot Password?
+            </button>
+          </div>
+        )}
 
         <p className="text-gray-400 text-center mt-5">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}

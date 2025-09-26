@@ -21,16 +21,12 @@ export async function POST (req: NextRequest) {
            );
          }
 
-
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        const otp = otpGenerator(6)
 
         const newUser = await User.create({
           name,
           email,
           password: hashedPassword,
-          otp,
         });
 
            const token = jwt.sign(
@@ -48,7 +44,6 @@ export async function POST (req: NextRequest) {
             name: newUser.name,
             email: newUser.email,
             isVerified: newUser.isVerified,
-            otp: newUser.otp,
           },
         },
         { status: 201 }
@@ -65,17 +60,6 @@ export async function POST (req: NextRequest) {
       return response;
     } catch (error) {
         console.log(error)
+        NextResponse.json({message: 'Internal Server Error', success: false}, {status: 500})
     }
-}
-
-function otpGenerator(length: number = 6): string {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let otp = "";
-
-  for (let i = 0; i < length; i++) {
-    otp += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-
-  return otp;
 }
